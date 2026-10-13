@@ -3,10 +3,12 @@ import Review from '../models/Review.js';
 import { uploadImage } from '../middleware/upload.js';
 import axios from 'axios';
 
+const SEARCH_SERVICE_URL = process.env.SEARCH_SERVICE_URL || 'http://localhost:5004';
+
 // Sync helpers
 const syncCreate = async (product) => {
   try {
-    await axios.post('http://localhost:5004/api/search/sync', product);
+    await axios.post(`${SEARCH_SERVICE_URL}/api/search/sync`, product);
   } catch (err) {
     console.error('Failed to sync product create to search service:', err.message);
   }
@@ -14,7 +16,7 @@ const syncCreate = async (product) => {
 
 const syncUpdate = async (id, product) => {
   try {
-    await axios.put(`http://localhost:5004/api/search/sync/${id}`, product);
+    await axios.put(`${SEARCH_SERVICE_URL}/api/search/sync/${id}`, product);
   } catch (err) {
     console.error('Failed to sync product update to search service:', err.message);
   }
@@ -22,7 +24,7 @@ const syncUpdate = async (id, product) => {
 
 const syncDelete = async (id) => {
   try {
-    await axios.delete(`http://localhost:5004/api/search/sync/${id}`);
+    await axios.delete(`${SEARCH_SERVICE_URL}/api/search/sync/${id}`);
   } catch (err) {
     console.error('Failed to sync product delete to search service:', err.message);
   }

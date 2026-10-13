@@ -2,6 +2,10 @@ import Order from '../models/Order.js';
 import { sendOrderEmail } from '../config/mail.js';
 import axios from 'axios';
 
+const USER_SERVICE_URL = process.env.USER_SERVICE_URL || 'http://localhost:5002';
+const PRODUCT_SERVICE_URL = process.env.PRODUCT_SERVICE_URL || 'http://localhost:5003';
+const CART_SERVICE_URL = process.env.CART_SERVICE_URL || 'http://localhost:5005';
+
 // Helper to simulate populate('userId', 'name email')
 const populateOrderUsers = async (orders) => {
   if (!orders || orders.length === 0) return orders;
@@ -10,7 +14,7 @@ const populateOrderUsers = async (orders) => {
   const userIds = [...new Set(orders.map(o => o.userId.toString()))];
 
   try {
-    const userRes = await axios.post('http://localhost:5002/api/users/batch', { userIds });
+    const userRes = await axios.post(`${USER_SERVICE_URL}/api/users/batch`, { userIds });
     const usersList = userRes.data.users || [];
 
     const userMap = {};
@@ -43,7 +47,7 @@ export const createOrder = async (req, res) => {
 
     // 1. Validate stock availability and decrement stock in Product Service
     try {
-      await axios.post('http://localhost:5003/api/products/validate-and-decrement-stock', { items: products });
+      await axios.post(`${PRODUCT_SERVICE_URL}/api/products/validate-and-decrement-stock`, { items: products });
     } catch (err) {
       const status = err.response?.status || 400;
       const message = err.response?.data?.message || 'Stock verification/decrement failed';
@@ -65,7 +69,7 @@ export const createOrder = async (req, res) => {
 
     // 3. Clear User Cart in Cart Service
     try {
-      await axios.delete(`http://localhost:5005/api/cart/internal/clear/${req.user._id}`);
+      await axios.delete(`${CART_SERVICE_URL}/api/cart/internal/clear/${req.user._id}`);
     } catch (err) {
       console.error('Failed to clear user cart in checkout:', err.message);
     }
@@ -97,7 +101,7 @@ export const getMyOrders = async (req, res) => {
       // Seller sees orders that contain their products
       let sellerProducts = [];
       try {
-        const prodRes = await axios.get(`http://localhost:5003/api/products/seller/${req.user._id}`);
+        const prodRes = await axios.get(`${PRODUCT_SERVICE_URL}/api/products/seller/${req.user._id}`);
         sellerProducts = prodRes.data || [];
       } catch (err) {
         console.error('Failed to retrieve seller products:', err.message);

@@ -273,13 +273,14 @@ const seedData = async () => {
     const bcrypt = require('bcryptjs');
 
     // Create DB Connections
-    connUser = await mongoose.createConnection('mongodb://localhost:27017/ecom-user').asPromise();
-    connProduct = await mongoose.createConnection('mongodb://localhost:27017/ecom-product').asPromise();
-    connSearch = await mongoose.createConnection('mongodb://localhost:27017/ecom-search').asPromise();
-    connCart = await mongoose.createConnection('mongodb://localhost:27017/ecom-cart').asPromise();
-    connOrder = await mongoose.createConnection('mongodb://localhost:27017/ecom-order').asPromise();
+    const MONGO_HOST = process.env.MONGO_HOST || 'localhost:27017';
+    connUser = await mongoose.createConnection(`mongodb://${MONGO_HOST}/ecom-user`).asPromise();
+    connProduct = await mongoose.createConnection(`mongodb://${MONGO_HOST}/ecom-product`).asPromise();
+    connSearch = await mongoose.createConnection(`mongodb://${MONGO_HOST}/ecom-search`).asPromise();
+    connCart = await mongoose.createConnection(`mongodb://${MONGO_HOST}/ecom-cart`).asPromise();
+    connOrder = await mongoose.createConnection(`mongodb://${MONGO_HOST}/ecom-order`).asPromise();
 
-    console.log('Connected to all 5 microservice databases.');
+    console.log(`Connected to all 5 microservice databases at ${MONGO_HOST}.`);
 
     // Define schemas / models
     const addressSchema = new mongoose.Schema({

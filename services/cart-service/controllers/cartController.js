@@ -1,6 +1,8 @@
 import Cart from '../models/Cart.js';
 import axios from 'axios';
 
+const PRODUCT_SERVICE_URL = process.env.PRODUCT_SERVICE_URL || 'http://localhost:5003';
+
 // Helper function to simulate mongoose populate by making a REST call to Product Service
 const populateCart = async (cart) => {
   if (!cart) return null;
@@ -12,7 +14,7 @@ const populateCart = async (cart) => {
   const productIds = cart.items.map((item) => item.productId.toString());
 
   try {
-    const response = await axios.post('http://localhost:5003/api/products/batch', { productIds });
+    const response = await axios.post(`${PRODUCT_SERVICE_URL}/api/products/batch`, { productIds });
     const products = response.data;
 
     const productMap = {};
@@ -66,7 +68,7 @@ export const addToCart = async (req, res) => {
     // Validate if product exists in Product Service
     let productExists = false;
     try {
-      const prodRes = await axios.get(`http://localhost:5003/api/products/${productId}`);
+      const prodRes = await axios.get(`${PRODUCT_SERVICE_URL}/api/products/${productId}`);
       if (prodRes.data) {
         productExists = true;
       }

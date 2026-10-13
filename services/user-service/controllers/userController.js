@@ -1,6 +1,10 @@
 import User from '../models/User.js';
 import axios from 'axios';
 
+const PRODUCT_SERVICE_URL = process.env.PRODUCT_SERVICE_URL || 'http://localhost:5003';
+const ORDER_SERVICE_URL = process.env.ORDER_SERVICE_URL || 'http://localhost:5006';
+const CART_SERVICE_URL = process.env.CART_SERVICE_URL || 'http://localhost:5005';
+
 // @desc    Get all users
 // @route   GET /api/users
 // @access  Private (Admin)
@@ -121,7 +125,7 @@ export const getAdminStats = async (req, res) => {
     let totalProducts = 0;
     let categoryStats = [];
     try {
-      const prodRes = await axios.get('http://localhost:5003/api/products/internal/stats');
+      const prodRes = await axios.get(`${PRODUCT_SERVICE_URL}/api/products/internal/stats`);
       totalProducts = prodRes.data.totalProducts;
       categoryStats = prodRes.data.categoryStats;
     } catch (err) {
@@ -134,7 +138,7 @@ export const getAdminStats = async (req, res) => {
     let monthlySales = [];
     let topSellingProducts = [];
     try {
-      const orderRes = await axios.get('http://localhost:5006/api/orders/internal/stats');
+      const orderRes = await axios.get(`${ORDER_SERVICE_URL}/api/orders/internal/stats`);
       totalOrders = orderRes.data.totalOrders;
       revenue = orderRes.data.revenue;
       monthlySales = orderRes.data.monthlySales;
@@ -179,7 +183,7 @@ export const internalRegister = async (req, res) => {
       // Initialize cart in Cart Service via REST call if role is customer
       if (user.role === 'customer') {
         try {
-          await axios.post(`http://localhost:5005/api/cart/internal/init/${user._id}`);
+          await axios.post(`${CART_SERVICE_URL}/api/cart/internal/init/${user._id}`);
         } catch (err) {
           console.error('Failed to initialize cart for new user:', err.message);
         }

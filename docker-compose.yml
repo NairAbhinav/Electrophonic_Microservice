@@ -1,0 +1,169 @@
+services:
+  mongo:
+    image: mongo:7
+    container_name: ecom-mongo
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo_data:/data/db
+    restart: unless-stopped
+
+  auth-service:
+    build:
+      context: ./services/auth-service
+      dockerfile: Dockerfile
+    container_name: ecom-auth-service
+    ports:
+      - "5001:5001"
+    environment:
+      - PORT=5001
+      - NODE_ENV=production
+      - MONGO_URI=mongodb://mongo:27017/ecom-auth
+      - JWT_SECRET=super_secret_jwt_token_key_987654321
+      - USER_SERVICE_URL=http://user-service:5002
+    depends_on:
+      - mongo
+      - user-service
+    restart: unless-stopped
+
+  user-service:
+    build:
+      context: ./services/user-service
+      dockerfile: Dockerfile
+    container_name: ecom-user-service
+    ports:
+      - "5002:5002"
+    environment:
+      - PORT=5002
+      - NODE_ENV=production
+      - MONGO_URI=mongodb://mongo:27017/ecom-user
+      - JWT_SECRET=super_secret_jwt_token_key_987654321
+      - PRODUCT_SERVICE_URL=http://product-service:5003
+      - ORDER_SERVICE_URL=http://order-service:5006
+      - CART_SERVICE_URL=http://cart-service:5005
+    depends_on:
+      - mongo
+    restart: unless-stopped
+
+  product-service:
+    build:
+      context: ./services/product-service
+      dockerfile: Dockerfile
+    container_name: ecom-product-service
+    ports:
+      - "5003:5003"
+    environment:
+      - PORT=5003
+      - NODE_ENV=production
+      - MONGO_URI=mongodb://mongo:27017/ecom-product
+      - JWT_SECRET=super_secret_jwt_token_key_987654321
+      - SEARCH_SERVICE_URL=http://search-service:5004
+      - UPLOADS_PATH=/app/uploads
+    volumes:
+      - product_uploads:/app/uploads
+    depends_on:
+      - mongo
+    restart: unless-stopped
+
+  search-service:
+    build:
+      context: ./services/search-service
+      dockerfile: Dockerfile
+    container_name: ecom-search-service
+    ports:
+      - "5004:5004"
+    environment:
+      - PORT=5004
+      - NODE_ENV=production
+      - MONGO_URI=mongodb://mongo:27017/ecom-search
+      - JWT_SECRET=super_secret_jwt_token_key_987654321
+    depends_on:
+      - mongo
+    restart: unless-stopped
+
+  cart-service:
+    build:
+      context: ./services/cart-service
+      dockerfile: Dockerfile
+    container_name: ecom-cart-service
+    ports:
+      - "5005:5005"
+    environment:
+      - PORT=5005
+      - NODE_ENV=production
+      - MONGO_URI=mongodb://mongo:27017/ecom-cart
+      - JWT_SECRET=super_secret_jwt_token_key_987654321
+      - PRODUCT_SERVICE_URL=http://product-service:5003
+    depends_on:
+      - mongo
+      - product-service
+    restart: unless-stopped
+
+  order-service:
+    build:
+      context: ./services/order-service
+      dockerfile: Dockerfile
+    container_name: ecom-order-service
+    ports:
+      - "5006:5006"
+    environment:
+      - PORT=5006
+      - NODE_ENV=production
+      - MONGO_URI=mongodb://mongo:27017/ecom-order
+      - JWT_SECRET=super_secret_jwt_token_key_987654321
+      - USER_SERVICE_URL=http://user-service:5002
+      - PRODUCT_SERVICE_URL=http://product-service:5003
+      - CART_SERVICE_URL=http://cart-service:5005
+    depends_on:
+      - mongo
+      - product-service
+      - cart-service
+      - user-service
+    restart: unless-stopped
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: ecom-gateway
+    ports:
+      - "5000:5000"
+    environment:
+      - PORT=5000
+      - NODE_ENV=production
+      - AUTH_SERVICE_URL=http://auth-service:5001
+      - USER_SERVICE_URL=http://user-service:5002
+      - PRODUCT_SERVICE_URL=http://product-service:5003
+      - SEARCH_SERVICE_URL=http://search-service:5004
+      - CART_SERVICE_URL=http://cart-service:5005
+      - ORDER_SERVICE_URL=http://order-service:5006
+      - UPLOADS_PATH=/app/uploads
+    volumes:
+      - product_uploads:/app/uploads
+    depends_on:
+      - auth-service
+      - user-service
+      - product-service
+      - search-service
+      - cart-service
+      - order-service
+    restart: unless-stopped
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: ecom-frontend
+    ports:
+      - "5173:80"
+    depends_on:
+      - backend
+    restart: unless-stopped
+
+volumes:
+  mongo_data:
+  product_uploads:
+
+networks:
+  default:
+    name: ecom-network

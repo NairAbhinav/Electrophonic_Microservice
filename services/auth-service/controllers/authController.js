@@ -9,6 +9,8 @@ const generateToken = (user) => {
   );
 };
 
+const USER_SERVICE_URL = process.env.USER_SERVICE_URL || 'http://localhost:5002';
+
 // @desc    Register a new user
 // @route   POST /api/auth/register
 // @access  Public
@@ -17,7 +19,7 @@ export const registerUser = async (req, res) => {
 
   try {
     // Delegate creation to user-service
-    const response = await axios.post('http://localhost:5002/api/users/internal/register', {
+    const response = await axios.post(`${USER_SERVICE_URL}/api/users/internal/register`, {
       name,
       email,
       password,
@@ -50,7 +52,7 @@ export const loginUser = async (req, res) => {
 
   try {
     // Delegate validation to user-service
-    const response = await axios.post('http://localhost:5002/api/users/internal/login', {
+    const response = await axios.post(`${USER_SERVICE_URL}/api/users/internal/login`, {
       email,
       password
     });

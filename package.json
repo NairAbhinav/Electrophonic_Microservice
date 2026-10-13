@@ -13,7 +13,10 @@
     "order-srv": "npm run dev --prefix services/order-service",
     "frontend": "npm run dev --prefix frontend",
     "dev": "concurrently \"npm run gateway\" \"npm run auth-srv\" \"npm run user-srv\" \"npm run product-srv\" \"npm run search-srv\" \"npm run cart-srv\" \"npm run order-srv\" \"npm run frontend\"",
-    "seed": "node seed_all.js"
+    "seed": "node seed_all.js",
+    "docker:up": "docker compose up --build -d",
+    "docker:down": "docker compose down",
+    "docker:logs": "docker compose logs -f"
   },
   "devDependencies": {
     "concurrently": "^8.2.2"

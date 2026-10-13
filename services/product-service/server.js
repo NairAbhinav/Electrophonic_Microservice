@@ -16,9 +16,12 @@ app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
+import { fileURLToPath } from 'url';
+
 // Serve static upload directory (since products may be uploaded locally)
-const __dirname = path.resolve();
-app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+const __filename = fileURLToPath(import.meta.url);
+const uploadsDir = process.env.UPLOADS_PATH || path.join(__dirname, 'uploads');
+app.use('/uploads', express.static(uploadsDir));
 
 // Register REST Routes
 app.use('/api/products', productRoutes);
